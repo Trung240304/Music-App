@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/lavender</item>
+        <item name="colorPrimaryDark">@color/white</item>
+        <item name="colorAccent">@color/lavender</item>
+    </style>
+
+    <!-- Custom theme without ActionBar -->
+    <style name="Theme.AppCompat.NoActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/lavender</item>
+        <item name="colorAccent">@color/white</item>
+    </style>
+
+</resources>

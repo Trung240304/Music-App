@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/category_image"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/category" />
+
+    <TextView
+        android:id="@+id/category_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="Category Name"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="8dp" />
+</LinearLayout>
