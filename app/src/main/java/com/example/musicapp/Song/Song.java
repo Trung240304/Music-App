@@ -7,23 +7,45 @@ public class Song implements Parcelable {
     private String songName;
     private String artistName;
     private String genre;
-    private int artistImageResource;
-    private int songResource;
+    private int songImage; // ID ảnh nhạc
+    private int songFile; // Đường dẫn file nhạc (sử dụng R.raw)
 
-    public Song(String songName, String artistName, String genre, int artistImageResource, int songResource) {
+    public Song(String songName, String artistName, String genre, int songImage, int songFile) {
         this.songName = songName;
         this.artistName = artistName;
         this.genre = genre;
-        this.artistImageResource = artistImageResource;
-        this.songResource = songResource;
+        this.songImage = songImage;
+        this.songFile = songFile;
     }
 
+    // Getters
+    public String getSongName() { return songName; }
+    public String getArtistName() { return artistName; }
+    public String getGenre() { return genre; }
+    public int getSongImage() { return songImage; }
+    public int getSongFile() { return songFile; }
+
+    // Implement Parcelable
     protected Song(Parcel in) {
         songName = in.readString();
         artistName = in.readString();
         genre = in.readString();
-        artistImageResource = in.readInt();
-        songResource = in.readInt();
+        songImage = in.readInt();
+        songFile = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(songName);
+        dest.writeString(artistName);
+        dest.writeString(genre);
+        dest.writeInt(songImage);
+        dest.writeInt(songFile);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {
@@ -37,34 +59,4 @@ public class Song implements Parcelable {
             return new Song[size];
         }
     };
-
-    public String getSongName() {
-        return songName;
-    }
-
-    public String getArtistName() {
-        return artistName;
-    }
-
-    public int getSongResource() {
-        return songResource;
-    }
-
-    public int getArtistImageResource() {
-        return artistImageResource;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(songName);
-        dest.writeString(artistName);
-        dest.writeString(genre);
-        dest.writeInt(artistImageResource);
-        dest.writeInt(songResource);
-    }
 }
