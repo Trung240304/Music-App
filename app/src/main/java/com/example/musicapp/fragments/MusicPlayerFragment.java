@@ -53,7 +53,7 @@ public class MusicPlayerFragment extends Fragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             currentSongIndex = bundle.getInt("currentSongIndex", 0);
-            songList = bundle.getParcelableArrayList("songList");
+            songList = (List<Song>) bundle.getSerializable("songList");  // Lấy danh sách bài hát qua Serializable
             loadSong(currentSongIndex);  // Load bài hát đầu tiên khi tạo fragment
         }
 

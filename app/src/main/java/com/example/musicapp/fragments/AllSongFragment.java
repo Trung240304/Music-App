@@ -39,7 +39,9 @@ public class AllSongFragment extends Fragment {
             // Chuyển đến MusicPlayerFragment khi ấn vào bài hát
             Bundle bundle = new Bundle();
             bundle.putInt("currentSongIndex", songList.indexOf(song));  // Truyền vị trí bài hát hiện tại
-            bundle.putParcelableArrayList("songList", new ArrayList<>(songList));  // Truyền danh sách bài hát
+
+            // Sử dụng putSerializable để truyền danh sách bài hát
+            bundle.putSerializable("songList", new ArrayList<>(songList));  // Truyền danh sách bài hát
 
             MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
             musicPlayerFragment.setArguments(bundle);

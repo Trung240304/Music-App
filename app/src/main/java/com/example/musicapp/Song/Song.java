@@ -1,14 +1,13 @@
 package com.example.musicapp.Song;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import java.io.Serializable;
 
-public class Song implements Parcelable {
+public class Song implements Serializable {
     private String songName;
     private String artistName;
     private String genre;
     private int songImage; // ID ảnh nhạc
-    private int songFile; // Đường dẫn file nhạc (sử dụng R.raw)
+    private int songFile;  // Đường dẫn file nhạc (sử dụng R.raw)
 
     public Song(String songName, String artistName, String genre, int songImage, int songFile) {
         this.songName = songName;
@@ -19,44 +18,23 @@ public class Song implements Parcelable {
     }
 
     // Getters
-    public String getSongName() { return songName; }
-    public String getArtistName() { return artistName; }
-    public String getGenre() { return genre; }
-    public int getSongImage() { return songImage; }
-    public int getSongFile() { return songFile; }
-
-    // Implement Parcelable
-    protected Song(Parcel in) {
-        songName = in.readString();
-        artistName = in.readString();
-        genre = in.readString();
-        songImage = in.readInt();
-        songFile = in.readInt();
+    public String getSongName() {
+        return songName;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(songName);
-        dest.writeString(artistName);
-        dest.writeString(genre);
-        dest.writeInt(songImage);
-        dest.writeInt(songFile);
+    public String getArtistName() {
+        return artistName;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public String getGenre() {
+        return genre;
     }
 
-    public static final Creator<Song> CREATOR = new Creator<Song>() {
-        @Override
-        public Song createFromParcel(Parcel in) {
-            return new Song(in);
-        }
+    public int getSongImage() {
+        return songImage;
+    }
 
-        @Override
-        public Song[] newArray(int size) {
-            return new Song[size];
-        }
-    };
+    public int getSongFile() {
+        return songFile;
+    }
 }
