@@ -16,6 +16,15 @@ import java.util.List;
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
     private Context context;
     private List<Category> categoryList;
+    private OnCategoryClickListener onCategoryClickListener;
+
+    public interface OnCategoryClickListener {
+        void onCategoryClick(Category category);
+    }
+
+    public void setOnCategoryClickListener(OnCategoryClickListener listener) {
+        this.onCategoryClickListener = listener;
+    }
 
     public CategoryAdapter(Context context, List<Category> categoryList) {
         this.context = context;
@@ -34,6 +43,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         Category category = categoryList.get(position);
         holder.categoryName.setText(category.getName());
         holder.categoryImage.setImageResource(category.getImageResource());
+
+        holder.itemView.setOnClickListener(v -> {
+            if (onCategoryClickListener != null) {
+                onCategoryClickListener.onCategoryClick(category);
+            }
+        });
     }
 
     @Override
