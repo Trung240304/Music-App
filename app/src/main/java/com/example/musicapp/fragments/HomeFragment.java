@@ -87,7 +87,7 @@ public class HomeFragment extends Fragment {
         // Thiết lập layout cho các RecyclerView với GridLayoutManager
         recyclerViewArtist.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 2 cột cho artist
         recyclerViewCategory.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 2 cột cho category
-        recyclerViewAllSongs.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)); // Giữ nguyên cho All Songs
+        recyclerViewAllSongs.setLayoutManager(new LinearLayoutManager(getContext())); // Đổi sang chiều dọc cho All Songs
 
         // Dữ liệu giả cho Artist
         artistList = new ArrayList<>();
