@@ -14,8 +14,8 @@ import com.example.musicapp.R;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
-    private Context context;
-    private List<Category> categoryList;
+    private final Context context;
+    private final List<Category> categoryList;
     private OnCategoryClickListener onCategoryClickListener;
 
     public interface OnCategoryClickListener {
@@ -57,8 +57,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView categoryName;
-        ImageView categoryImage;
+        final TextView categoryName;
+        final ImageView categoryImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

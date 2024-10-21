@@ -48,6 +48,12 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
         return artistList.size();
     }
 
+    // Phương thức cập nhật dữ liệu
+    public void updateData(List<Artist> newArtistList) {
+        this.artistList = newArtistList;
+        notifyDataSetChanged();
+    }
+
     public static class ArtistViewHolder extends RecyclerView.ViewHolder {
         ImageView imageViewArtist;
         TextView textViewArtistName;

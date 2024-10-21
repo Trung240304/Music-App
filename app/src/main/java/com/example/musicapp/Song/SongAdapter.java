@@ -16,6 +16,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     private List<Song> songList;
     private OnItemClickListener onItemClickListener;
 
+    // Interface cho sự kiện click
     public interface OnItemClickListener {
         void onItemClick(Song song);
     }
@@ -46,6 +47,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     @Override
     public int getItemCount() {
         return songList.size();
+    }
+
+    // Phương thức cập nhật dữ liệu
+    public void updateData(List<Song> newSongList) {
+        this.songList = newSongList;
+        notifyDataSetChanged();
     }
 
     public static class SongViewHolder extends RecyclerView.ViewHolder {
