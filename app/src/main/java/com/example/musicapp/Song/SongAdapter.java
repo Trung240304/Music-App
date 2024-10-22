@@ -49,12 +49,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         return songList.size();
     }
 
-    // Phương thức cập nhật dữ liệu
-    public void updateData(List<Song> newSongList) {
-        this.songList = newSongList;
-        notifyDataSetChanged();
-    }
-
     public static class SongViewHolder extends RecyclerView.ViewHolder {
         ImageView songImage;
         TextView songName, artistName;

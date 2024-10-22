@@ -11,6 +11,14 @@
         android:gravity="center"
         android:padding="16dp">
 
+        <!-- Thanh tìm kiếm -->
+        <TextView
+            android:id="@+id/search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tìm kiếm bài hát, nghệ sĩ..."
+            android:padding="10dp" />
+
         <!-- Hàng đầu tiên với 2 ImageButtons -->
         <LinearLayout
             android:layout_width="match_parent"

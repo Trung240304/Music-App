@@ -8,7 +8,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.musicapp.R;
-
 import java.util.List;
 
 public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistViewHolder> {
@@ -46,12 +45,6 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
     @Override
     public int getItemCount() {
         return artistList.size();
-    }
-
-    // Phương thức cập nhật dữ liệu
-    public void updateData(List<Artist> newArtistList) {
-        this.artistList = newArtistList;
-        notifyDataSetChanged();
     }
 
     public static class ArtistViewHolder extends RecyclerView.ViewHolder {

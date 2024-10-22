@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.example.musicapp.R;
 import com.example.musicapp.Artist.Artist;
@@ -18,15 +19,13 @@ import com.example.musicapp.Category.Category;
 import com.example.musicapp.Category.CategoryAdapter;
 import com.example.musicapp.Song.Song;
 import com.example.musicapp.Song.SongAdapter;
-import com.example.musicapp.fragments.AlbumFragment;
-import com.example.musicapp.fragments.AllSongFragment;
-import com.example.musicapp.fragments.ArtistFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
 
+    private TextView tvSearch;
     private ImageButton imgBtn1, imgBtn2, imgBtn3, imgBtn4;
     private RecyclerView recyclerViewArtist, recyclerViewCategory, recyclerViewAllSongs;
     private ArtistAdapter artistAdapter;
@@ -37,8 +36,7 @@ public class HomeFragment extends Fragment {
     private List<Song> songList;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         // Ánh xạ các ImageButton
@@ -46,6 +44,14 @@ public class HomeFragment extends Fragment {
         imgBtn2 = view.findViewById(R.id.imgBtn2);
         imgBtn3 = view.findViewById(R.id.imgBtn3);
         imgBtn4 = view.findViewById(R.id.imgBt4);
+        tvSearch = view.findViewById(R.id.search_bar);
+        tvSearch.setOnClickListener(v -> {
+            Fragment allSongFragment = new AllSongFragment();
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, allSongFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
 
         // Thiết lập sự kiện cho imgBtn1 (chuyển đến AllSongFragment)
         imgBtn1.setOnClickListener(v -> {
@@ -84,33 +90,73 @@ public class HomeFragment extends Fragment {
         recyclerViewCategory = view.findViewById(R.id.recyclerViewCategory);
         recyclerViewAllSongs = view.findViewById(R.id.recyclerViewAllSongs);
 
-        // Thiết lập layout cho các RecyclerView với GridLayoutManager
-        recyclerViewArtist.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 2 cột cho artist
-        recyclerViewCategory.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 2 cột cho category
-        recyclerViewAllSongs.setLayoutManager(new LinearLayoutManager(getContext())); // Đổi sang chiều dọc cho All Songs
+        // Thiết lập layout cho các RecyclerView
+        recyclerViewArtist.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerViewCategory.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerViewAllSongs.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Dữ liệu giả cho Artist
         artistList = new ArrayList<>();
-        artistList.add(new Artist("Artist 1", R.drawable.artist)); // Thay R.drawable.artist bằng hình ảnh thực tế
-        artistList.add(new Artist("Artist 2", R.drawable.artist)); // Thay R.drawable.artist bằng hình ảnh thực tế
+        artistList.add(new Artist("Artist 1", R.drawable.artist));
+        artistList.add(new Artist("Artist 2", R.drawable.artist));
+
+        // Thiết lập Adapter cho Artist
         artistAdapter = new ArtistAdapter(artistList, artist -> {
-            // Xử lý sự kiện click vào artist nếu cần
+            Bundle bundle = new Bundle();
+            bundle.putString("artistName", artist.getName());
+
+            ArtistSongFragment artistSongFragment = new ArtistSongFragment();
+            artistSongFragment.setArguments(bundle);
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, artistSongFragment)
+                    .addToBackStack(null)
+                    .commit();
         });
         recyclerViewArtist.setAdapter(artistAdapter);
 
         // Dữ liệu giả cho Category
         categoryList = new ArrayList<>();
-        categoryList.add(new Category("Pop", R.drawable.category)); // Thay R.drawable.category bằng hình ảnh thực tế
-        categoryList.add(new Category("Rock", R.drawable.category)); // Thay R.drawable.category bằng hình ảnh thực tế
+        categoryList.add(new Category("Pop", R.drawable.category));
+        categoryList.add(new Category("Rock", R.drawable.category));
+        categoryList.add(new Category("Jazz", R.drawable.category));
+        categoryList.add(new Category("Hip Hop", R.drawable.category));
+
+        // Thiết lập Adapter cho Category và thiết lập sự kiện click
         categoryAdapter = new CategoryAdapter(getContext(), categoryList);
+        categoryAdapter.setOnCategoryClickListener(category -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("categoryName", category.getName());
+
+            // Chuyển đến CategorySongFragment
+            CategorySongFragment categorySongFragment = new CategorySongFragment();
+            categorySongFragment.setArguments(bundle);
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, categorySongFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
         recyclerViewCategory.setAdapter(categoryAdapter);
 
         // Dữ liệu giả cho All Songs
         songList = new ArrayList<>();
-        songList.add(new Song("Song 1", "Artist 1", "Pop", R.drawable.artist, R.raw.sakura)); // Thay R.drawable.artist và R.raw.sakura bằng dữ liệu thực tế
-        songList.add(new Song("Song 2", "Artist 2", "Rock", R.drawable.artist, R.raw.sakura)); // Thay R.drawable.artist và R.raw.sakura bằng dữ liệu thực tế
+        songList.add(new Song("Song 1", "Artist 1", "Pop", R.drawable.artist, R.raw.sakura));
+        songList.add(new Song("Song 2", "Artist 2", "Rock", R.drawable.artist, R.raw.sakura));
+
+        // Thiết lập Adapter cho All Songs và thiết lập sự kiện click
         songAdapter = new SongAdapter(getContext(), songList, song -> {
-            // Xử lý sự kiện click bài hát
+            // Chuyển đến MusicPlayerFragment khi ấn vào bài hát
+            Bundle bundle = new Bundle();
+            bundle.putInt("currentSongIndex", songList.indexOf(song));  // Truyền vị trí bài hát hiện tại
+
+            // Sử dụng putSerializable để truyền danh sách bài hát
+            bundle.putSerializable("songList", new ArrayList<>(songList));  // Truyền danh sách bài hát
+
+            MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
+            musicPlayerFragment.setArguments(bundle);
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, musicPlayerFragment)
+                    .addToBackStack(null)
+                    .commit();
         });
         recyclerViewAllSongs.setAdapter(songAdapter);
 
