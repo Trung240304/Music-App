@@ -51,20 +51,16 @@ public class AminActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.nav_Song:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SongFragment()).commit();
-                break;
-            case R.id.nav_artista:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ArtistAFragment()).commit();
-                break;
-            case R.id.nav_albuma:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AlbumAFragment()).commit();
-                break;
-            case R.id.nav_logout:
-                Toast.makeText(this, "Logout!", Toast.LENGTH_SHORT).show();
-                break;
+        if (item.getItemId() == R.id.nav_Song) {
+            // Xử lý cho mục bài hát
+        } else if (item.getItemId() == R.id.nav_artist) {
+            // Xử lý cho mục nghệ sĩ
+        } else if (item.getItemId() == R.id.nav_album) {
+            // Xử lý cho mục album
+        } else if (item.getItemId() == R.id.nav_logout) {
+            Toast.makeText(this, "Đăng xuất!", Toast.LENGTH_SHORT).show();
         }
+
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
