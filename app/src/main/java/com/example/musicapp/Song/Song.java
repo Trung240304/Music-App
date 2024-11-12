@@ -1,40 +1,38 @@
 package com.example.musicapp.Song;
-
 import java.io.Serializable;
 
-public class Song implements Serializable {
-    private String songName;
-    private String artistName;
+public class Song implements Serializable  {
+    private String name;
+    private String singer;
     private String genre;
-    private int songImage; // ID ảnh nhạc
-    private int songFile;  // Đường dẫn file nhạc (sử dụng R.raw)
+    private String imageUrl;
+    private String url;
 
-    public Song(String songName, String artistName, String genre, int songImage, int songFile) {
-        this.songName = songName;
-        this.artistName = artistName;
+    public Song(String name, String singer, String genre, String imageUrl, String url) {
+        this.name = name;
+        this.singer = singer;
         this.genre = genre;
-        this.songImage = songImage;
-        this.songFile = songFile;
+        this.imageUrl = imageUrl;
+        this.url = url;
     }
 
-    // Getters
-    public String getSongName() {
-        return songName;
+    public String getName() {
+        return name;
     }
 
-    public String getArtistName() {
-        return artistName;
+    public String getSinger() {
+        return singer;
     }
 
     public String getGenre() {
         return genre;
     }
 
-    public int getSongImage() {
-        return songImage;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public int getSongFile() {
-        return songFile;
+    public String getUrl() {
+        return url;
     }
 }

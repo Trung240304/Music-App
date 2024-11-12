@@ -1,5 +1,6 @@
 package com.example.musicapp.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -11,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.musicapp.LoginActivity;
 import com.example.musicapp.R;
 import com.example.musicapp.fragmentAdmin.AlbumAFragment;
 import com.example.musicapp.fragmentAdmin.ArtistAFragment;
@@ -62,6 +64,11 @@ public class AminActivity extends AppCompatActivity implements NavigationView.On
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AlbumAFragment()).commit();
                 break;
             case R.id.nav_logout:
+                // Chuyển đến LoginActivity
+                Intent intent = new Intent(AminActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // Xóa tất cả activity trước đó
+                startActivity(intent);
+                finish(); // Kết thúc AdminActivity
                 Toast.makeText(this, "Logout!", Toast.LENGTH_SHORT).show();
                 break;
         }

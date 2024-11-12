@@ -25,23 +25,14 @@ public class CategorySongFragment extends Fragment {
         List<Song> songs = new ArrayList<>();
         switch (categoryName) {
             case "Pop":
-                songs.add(new Song("Pop Song 1", "Pop Artist 1", "Pop", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Pop Song 2", "Pop Artist 2", "Pop", R.drawable.artist, R.raw.sakura));
                 break;
             case "Rock":
-                songs.add(new Song("Rock Song 1", "Rock Artist 1", "Rock", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Rock Song 2", "Rock Artist 2", "Rock", R.drawable.artist, R.raw.sakura));
                 break;
             case "Jazz":
-                songs.add(new Song("Jazz Song 1", "Jazz Artist 1", "Jazz", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Jazz Song 2", "Jazz Artist 2", "Jazz", R.drawable.artist, R.raw.sakura));
                 break;
             case "Hip Hop":
-                songs.add(new Song("Hip Hop Song 1", "Hip Hop Artist 1", "Hip Hop", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Hip Hop Song 2", "Hip Hop Artist 2", "Hip Hop", R.drawable.artist, R.raw.sakura));
                 break;
             default:
-                songs.add(new Song("Unknown Category Song", "Unknown Artist", "Unknown", R.drawable.artist, R.raw.sakura));
                 break;
         }
         return songs;
@@ -62,22 +53,7 @@ public class CategorySongFragment extends Fragment {
             filteredSongList = getSongsForCategory(categoryName);
         }
 
-        // Thiết lập Adapter cho RecyclerView
-        songAdapter = new SongAdapter(getContext(), filteredSongList, song -> {
-            // Xử lý sự kiện khi chọn bài hát
-            int position = filteredSongList.indexOf(song); // Lấy vị trí của bài hát
-            Bundle songBundle = new Bundle();
-            songBundle.putInt("currentSongIndex", position);
-            songBundle.putSerializable("songList", new ArrayList<>(filteredSongList));
 
-            MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
-            musicPlayerFragment.setArguments(songBundle);
-
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, musicPlayerFragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
 
         recyclerViewSongs.setAdapter(songAdapter);
 

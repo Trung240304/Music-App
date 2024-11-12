@@ -7,157 +7,210 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import android.view.animation.LinearInterpolator;
+
+import com.bumptech.glide.Glide;
 import com.example.musicapp.R;
 import com.example.musicapp.Song.Song;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MusicPlayerFragment extends Fragment {
-    private MediaPlayer mediaPlayer;
-    private TextView songName, artistName, genre, currentTime, totalTime;
-    private ImageView songImage;
+
+    private TextView songName, artistName, genreName, currentTime, totalTime;
+    private ImageView songImage, playPauseButton, nextButton, prevButton;
     private SeekBar seekBar;
-    private ImageButton btnPlayPause, btnNext, btnPrevious;
+    private MediaPlayer mediaPlayer;
     private Handler handler = new Handler();
-    private Runnable updateSeekBar;
-    private List<Song> songList;
+    private List<Song> songList = new ArrayList<>();
     private int currentSongIndex = 0;
+    private boolean isSeekBarUpdating = false;
     private ObjectAnimator rotateAnimator;
+    private boolean isPlaying = false; // Biến theo dõi trạng thái phát nhạc
+
+    public MusicPlayerFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            currentSongIndex = args.getInt("CURRENT_SONG_INDEX", 0);
+            songList = (List<Song>) args.getSerializable("SONG_LIST");
+        }
+
+        // Ensure currentSongIndex is valid
+        if (currentSongIndex < 0 || songList == null || currentSongIndex >= songList.size()) {
+            currentSongIndex = 0; // Default to first song if invalid
+        }
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_music_player, container, false);
 
-        // Ánh xạ các thành phần giao diện
+        // Initialize UI components
         songName = view.findViewById(R.id.tvSongName);
         artistName = view.findViewById(R.id.tvArtistName);
-        genre = view.findViewById(R.id.tvGenre);
-        songImage = view.findViewById(R.id.imgSong);
+        genreName = view.findViewById(R.id.tvGenre);
         currentTime = view.findViewById(R.id.tvCurrentTime);
         totalTime = view.findViewById(R.id.tvTotalTime);
+        songImage = view.findViewById(R.id.imgSong);
+        playPauseButton = view.findViewById(R.id.btnPlayPauss);
+        nextButton = view.findViewById(R.id.btnNext);
+        prevButton = view.findViewById(R.id.btnPrevious);
         seekBar = view.findViewById(R.id.seekBar);
-        btnPlayPause = view.findViewById(R.id.btnPlayPauss);
-        btnNext = view.findViewById(R.id.btnNext);
-        btnPrevious = view.findViewById(R.id.btnPrevious);
 
-        // Nhận dữ liệu từ Bundle
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            currentSongIndex = bundle.getInt("currentSongIndex", 0);
-            songList = (List<Song>) bundle.getSerializable("songList");  // Lấy danh sách bài hát qua Serializable
-            loadSong(currentSongIndex);  // Load bài hát đầu tiên khi tạo fragment
-        }
+        // Setup initial song
+        setupSong(currentSongIndex);
 
-        // Điều khiển nút Next
-        btnNext.setOnClickListener(v -> {
-            if (currentSongIndex < songList.size() - 1) {
-                currentSongIndex++;
-                loadSong(currentSongIndex);
-            }
-        });
+        // Play/Pause button listener
+        playPauseButton.setOnClickListener(v -> togglePlayPause());
 
-        // Điều khiển nút Previous
-        btnPrevious.setOnClickListener(v -> {
-            if (currentSongIndex > 0) {
-                currentSongIndex--;
-                loadSong(currentSongIndex);
-            }
-        });
+        // Next button listener
+        nextButton.setOnClickListener(v -> playNextSong());
 
-        // Điều khiển nút Play/Pause
-        btnPlayPause.setOnClickListener(v -> {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.pause();
-                btnPlayPause.setImageResource(R.drawable.play_icon);  // Chuyển nút sang biểu tượng "Play"
-                rotateAnimator.pause();  // Tạm dừng xoay
-            } else {
-                mediaPlayer.start();
-                btnPlayPause.setImageResource(R.drawable.pause_icon);  // Chuyển nút sang biểu tượng "Pause"
-                rotateAnimator.resume();  // Tiếp tục xoay
-                handler.postDelayed(updateSeekBar, 0);  // Bắt đầu cập nhật tiến trình
-            }
-        });
+        // Previous button listener
+        prevButton.setOnClickListener(v -> playPreviousSong());
 
-        // Cập nhật SeekBar theo thời gian thực
-        updateSeekBar = new Runnable() {
-            @Override
-            public void run() {
-                if (mediaPlayer != null) {
-                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                    currentTime.setText(formatTime(mediaPlayer.getCurrentPosition()));
-                    handler.postDelayed(this, 1000);  // Cập nhật mỗi giây
-                }
-            }
-        };
-
-        // Điều chỉnh SeekBar khi người dùng kéo thanh tiến trình
+        // SeekBar listener
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser && mediaPlayer != null) {
                     mediaPlayer.seekTo(progress);
-                    currentTime.setText(formatTime(progress));
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                handler.removeCallbacks(updateSeekBar);  // Dừng cập nhật khi người dùng kéo thanh
+                isSeekBarUpdating = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                handler.postDelayed(updateSeekBar, 0);  // Tiếp tục cập nhật khi người dùng thả thanh
+                isSeekBarUpdating = false;
             }
         });
 
         return view;
     }
 
-    // Hàm load bài hát
-    private void loadSong(int songIndex) {
-        Song song = songList.get(songIndex);
-        songName.setText(song.getSongName());
-        artistName.setText(song.getArtistName());
-        genre.setText(song.getGenre());
-        songImage.setImageResource(song.getSongImage());
+    private void setupSong(int songIndex) {
+        if (songList == null || songIndex < 0 || songIndex >= songList.size()) {
+            return; // Do nothing if songList is null or index is invalid
+        }
 
-        // Dừng và giải phóng bài hát cũ trước khi phát bài hát mới
         if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.reset();
             mediaPlayer.release();
         }
 
-        // Khởi tạo MediaPlayer cho bài hát mới
-        mediaPlayer = MediaPlayer.create(getContext(), song.getSongFile());
+        Song currentSong = songList.get(songIndex);
+
+        // Display song info
+        songName.setText(currentSong.getName());
+        artistName.setText(currentSong.getSinger());
+        genreName.setText(currentSong.getGenre()); // Set genre
+        Glide.with(getContext()).load(currentSong.getImageUrl()).into(songImage);
+
+        // Get resource ID from the filename in the raw folder
+        int resId = getResources().getIdentifier(currentSong.getUrl(), "raw", getContext().getPackageName());
+
+        // Prepare MediaPlayer
+        mediaPlayer = MediaPlayer.create(getContext(), resId);
+        if (mediaPlayer != null) { // Ensure mediaPlayer is created successfully
+            seekBar.setMax(mediaPlayer.getDuration());
+            totalTime.setText(formatTime(mediaPlayer.getDuration())); // Display total time
+
+            // Update SeekBar every second
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isSeekBarUpdating && mediaPlayer != null) {
+                        seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                        currentTime.setText(formatTime(mediaPlayer.getCurrentPosition())); // Update current time
+                    }
+                    handler.postDelayed(this, 1000);
+                }
+            }, 1000);
+
+            mediaPlayer.setOnCompletionListener(mp -> playNextSong());
+        }
+    }
+
+    private void togglePlayPause() {
+        if (mediaPlayer != null) { // Check if mediaPlayer is not null
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+                playPauseButton.setImageResource(R.drawable.play_icon);
+                stopImageRotation(); // Dừng xoay khi tạm dừng
+                isPlaying = false; // Cập nhật trạng thái
+            } else {
+                mediaPlayer.start();
+                playPauseButton.setImageResource(R.drawable.pause_icon);
+                startImageRotation(); // Bắt đầu xoay khi phát nhạc
+                isPlaying = true; // Cập nhật trạng thái
+            }
+        }
+    }
+
+    private void playNextSong() {
+        currentSongIndex++;
+        if (currentSongIndex >= songList.size()) {
+            currentSongIndex = 0; // Quay lại bài hát đầu tiên
+        }
+        setupSong(currentSongIndex);
         mediaPlayer.start();
-        btnPlayPause.setImageResource(R.drawable.pause_icon);  // Cập nhật nút thành "Pause"
+        playPauseButton.setImageResource(R.drawable.pause_icon);
+        startImageRotation(); // Bắt đầu xoay khi phát nhạc
+        isPlaying = true; // Cập nhật trạng thái
+    }
 
-        // Cập nhật lại giao diện SeekBar và thời gian
-        seekBar.setProgress(0);  // Reset tiến trình SeekBar về 0
-        seekBar.setMax(mediaPlayer.getDuration());  // Đặt thời lượng bài hát cho SeekBar
-        currentTime.setText(formatTime(0));  // Reset thời gian hiện tại về 0
-        totalTime.setText(formatTime(mediaPlayer.getDuration()));  // Hiển thị tổng thời gian của bài hát
+    private void playPreviousSong() {
+        currentSongIndex--;
+        if (currentSongIndex < 0) {
+            currentSongIndex = songList.size() - 1; // Quay lại bài hát cuối cùng
+        }
+        setupSong(currentSongIndex);
+        mediaPlayer.start();
+        playPauseButton.setImageResource(R.drawable.pause_icon);
+        startImageRotation(); // Bắt đầu xoay khi phát nhạc
+        isPlaying = true; // Cập nhật trạng thái
+    }
 
-        // Cập nhật tiến trình SeekBar mỗi giây
-        handler.postDelayed(updateSeekBar, 0);
+    private void startImageRotation() {
+        if (rotateAnimator == null) {
+            rotateAnimator = ObjectAnimator.ofFloat(songImage, "rotation", 0f, 360f);
+            rotateAnimator.setDuration(3000); // Duration for one complete rotation
+            rotateAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+            rotateAnimator.setInterpolator(null); // Use default interpolator
+            rotateAnimator.start();
+        } else if (!rotateAnimator.isRunning()) {
+            rotateAnimator.start(); // Resume rotation if it was paused
+        }
+    }
 
-        // Tạo hiệu ứng xoay cho ảnh bài hát
-        rotateAnimator = ObjectAnimator.ofFloat(songImage, "rotation", 0f, 360f);
-        rotateAnimator.setDuration(10000);  // Thời gian xoay (10 giây cho một vòng)
-        rotateAnimator.setInterpolator(new LinearInterpolator());  // Giữ tốc độ xoay đều
-        rotateAnimator.setRepeatCount(ObjectAnimator.INFINITE);  // Lặp lại vô hạn
-        rotateAnimator.start();
+    private void stopImageRotation() {
+        if (rotateAnimator != null && rotateAnimator.isRunning()) {
+            rotateAnimator.cancel(); // Dừng animation nhưng không reset về 0 độ
+            // Không reset rotation về 0
+        }
+    }
+
+    private String formatTime(int milliseconds) {
+        int seconds = (milliseconds / 1000) % 60;
+        int minutes = (milliseconds / (1000 * 60)) % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 
     @Override
@@ -166,16 +219,7 @@ public class MusicPlayerFragment extends Fragment {
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
-            handler.removeCallbacks(updateSeekBar);
         }
-        if (rotateAnimator != null) {
-            rotateAnimator.cancel();  // Dừng xoay
-        }
-    }
-
-    private String formatTime(int milliseconds) {
-        int minutes = (milliseconds / 1000) / 60;
-        int seconds = (milliseconds / 1000) % 60;
-        return String.format("%d:%02d", minutes, seconds);
+        stopImageRotation(); // Dừng xoay khi fragment bị hủy
     }
 }

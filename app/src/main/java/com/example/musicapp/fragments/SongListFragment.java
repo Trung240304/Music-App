@@ -1,82 +1,78 @@
 package com.example.musicapp.fragments;
 
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicapp.R;
 import com.example.musicapp.Song.Song;
 import com.example.musicapp.Song.SongAdapter;
+import com.example.musicapp.Data.DatabaseHelper;
+import com.example.musicapp.Data.SongTable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SongListFragment extends Fragment {
+public class SongListFragment extends Fragment implements SongAdapter.OnSongClickListener {
 
     private RecyclerView recyclerView;
     private SongAdapter songAdapter;
     private List<Song> songList;
 
-    // Tạo một danh sách bài hát mẫu cho từng thể loại
-    private List<Song> getSongsForCategory(String category) {
-        List<Song> songs = new ArrayList<>();
-        switch (category) {
-            case "Classical":
-                songs.add(new Song("Symphony No. 5", "Beethoven", "Classical", R.drawable.artist, R.raw.sakura));
-                break;
-            case "Indie":
-                songs.add(new Song("Indie Song 1", "Indie Artist", "Indie", R.drawable.artist, R.raw.sakura));
-                break;
-            case "Pop":
-                songs.add(new Song("Pop Song 1", "Pop Artist", "Pop", R.drawable.artist, R.raw.sakura));
-                break;
-            case "Hip Hop":
-                songs.add(new Song("Hip Hop Song 1", "Hip Hop Artist", "Hip Hop", R.drawable.artist, R.raw.sakura));
-                break;
-            case "Rock":
-                songs.add(new Song("Rock Song 1", "Rock Artist", "Rock", R.drawable.artist, R.raw.sakura));
-                break;
-            case "Jazz":
-                songs.add(new Song("Jazz Song 1", "Jazz Artist", "Jazz", R.drawable.artist, R.raw.sakura));
-                break;
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_song_list, container, false);
+        recyclerView = view.findViewById(R.id.recycler_view);
+
+        // Retrieve category name passed from AlbumFragment
+        String categoryName = getArguments() != null ? getArguments().getString("categoryName") : null;
+        if (categoryName != null) {
+            loadSongsByCategory(categoryName);
+            setupRecyclerView();
+        } else {
+            Toast.makeText(requireContext(), "Category not found", Toast.LENGTH_SHORT).show();
         }
-        return songs;
+
+        return view;
+    }
+
+    private void loadSongsByCategory(String categoryName) {
+        DatabaseHelper dbHelper = new DatabaseHelper(requireContext());
+        songList = SongTable.getSongsByGenre(dbHelper.getReadableDatabase(), categoryName);
+        dbHelper.close();
+    }
+
+    private void setupRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        // Initialize the adapter with a click listener
+        songAdapter = new SongAdapter(requireContext(), songList, false, this);
+        recyclerView.setAdapter(songAdapter);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_song_list, container, false);
+    public void onSongClick(Song song, int position) {
+        // Chuyển đến MusicPlayerFragment với thông tin bài hát
+        FragmentTransaction transaction = requireFragmentManager().beginTransaction();
+        MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
 
-        recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Chuyển thông tin bài hát đã chọn và danh sách bài hát
+        Bundle args = new Bundle();
+        args.putSerializable("SONG_LIST", new ArrayList<>(songList));
+        args.putInt("CURRENT_SONG_INDEX", position);
+        musicPlayerFragment.setArguments(args);
 
-        // Nhận tên thể loại từ đối số
-        if (getArguments() != null) {
-            String categoryName = getArguments().getString("categoryName");
-            songList = getSongsForCategory(categoryName); // Lấy danh sách bài hát theo thể loại
-        }
-
-        // Xử lý sự kiện khi chọn bài hát
-        songAdapter = new SongAdapter(getContext(), songList, song -> {
-            Bundle bundle = new Bundle();
-            bundle.putInt("currentSongIndex", songList.indexOf(song)); // Truyền vị trí bài hát hiện tại
-            bundle.putSerializable("songList", new ArrayList<>(songList)); // Truyền danh sách bài hát
-
-            // Chuyển sang MusicPlayerFragment
-            MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
-            musicPlayerFragment.setArguments(bundle);
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, musicPlayerFragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
-
-        recyclerView.setAdapter(songAdapter);
-
-        return view;
+        transaction.replace(R.id.fragment_container, musicPlayerFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

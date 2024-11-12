@@ -1,21 +1,19 @@
 package com.example.musicapp.Artist;
 
-import java.io.Serializable;
-
-public class Artist implements Serializable {
+public class Artist {
     private String name;
-    private int imageResId; // ID của hình ảnh
+    private String imageUrl;  // URL of the artist's image
 
-    public Artist(String name, int imageResId) {
+    public Artist(String name, String imageUrl) {
         this.name = name;
-        this.imageResId = imageResId;
+        this.imageUrl = imageUrl;
     }
 
     public String getName() {
         return name;
     }
 
-    public int getImageResId() {
-        return imageResId;
+    public String getImageUrl() {
+        return imageUrl;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.musicapp.fragments;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -10,9 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.musicapp.Data.DatabaseHelper;
+import com.example.musicapp.Data.SongTable;
 import com.example.musicapp.R;
 import com.example.musicapp.Song.Song;
 import com.example.musicapp.Song.SongAdapter;
@@ -20,11 +24,11 @@ import com.example.musicapp.Song.SongAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AllSongFragment extends Fragment {
+public class AllSongFragment extends Fragment implements SongAdapter.OnSongClickListener {
     private RecyclerView recyclerView;
     private SongAdapter songAdapter;
     private List<Song> songList;
-    private List<Song> filteredList; // Danh sách bài hát đã được lọc
+    private List<Song> filteredList;
     private SearchView searchView;
 
     @Nullable
@@ -32,48 +36,27 @@ public class AllSongFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_all_song, container, false);
 
-        // Ánh xạ RecyclerView và SearchView
         recyclerView = view.findViewById(R.id.recycler_view_songs);
         searchView = view.findViewById(R.id.search_view);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         songList = new ArrayList<>();
-        // Thêm dữ liệu mẫu
-        songList.add(new Song("Song 1", "Artist 1", "Pop", R.drawable.artist, R.raw.sakura));
-        songList.add(new Song("Song 2", "Artist 2", "Rock", R.drawable.category, R.raw.sakura));
+        loadSongs(); // Load all songs into songList
 
-        // Sao chép danh sách ban đầu vào danh sách lọc
         filteredList = new ArrayList<>(songList);
-
-        // Khởi tạo adapter cho RecyclerView
-        songAdapter = new SongAdapter(getContext(), filteredList, song -> {
-            // Chuyển đến MusicPlayerFragment khi ấn vào bài hát
-            Bundle bundle = new Bundle();
-            bundle.putInt("currentSongIndex", songList.indexOf(song));  // Truyền vị trí bài hát hiện tại
-            bundle.putSerializable("songList", new ArrayList<>(songList));  // Truyền danh sách bài hát
-
-            MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
-            musicPlayerFragment.setArguments(bundle);
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, musicPlayerFragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
-
+        songAdapter = new SongAdapter(getContext(), filteredList, false, this); // No CRUD functionality
         recyclerView.setAdapter(songAdapter);
 
-        // Lắng nghe sự thay đổi của văn bản trong SearchView
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false;  // Không cần xử lý khi nhấn "submit"
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Gọi phương thức lọc danh sách khi văn bản tìm kiếm thay đổi
-                filter(newText);
+                filter(newText); // Filter songs based on search text
                 return true;
             }
         });
@@ -81,21 +64,44 @@ public class AllSongFragment extends Fragment {
         return view;
     }
 
-    // Phương thức lọc danh sách bài hát
+    private void loadSongs() {
+        DatabaseHelper dbHelper = new DatabaseHelper(getContext());
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            songList.clear();
+            songList.addAll(SongTable.getAllSongs(db)); // Load songs from database
+        }
+    }
+
     private void filter(String text) {
         filteredList.clear();
         if (TextUtils.isEmpty(text)) {
-            // Nếu không có gì trong ô tìm kiếm, hiển thị tất cả bài hát
-            filteredList.addAll(songList);
+            filteredList.addAll(songList); // If search is empty, show all songs
         } else {
-            // Lọc danh sách dựa trên văn bản tìm kiếm
             for (Song song : songList) {
-                if (song.getSongName().toLowerCase().contains(text.toLowerCase())) {
+                // Filter based on song name or singer
+                if (song.getName().toLowerCase().contains(text.toLowerCase()) ||
+                        song.getSinger().toLowerCase().contains(text.toLowerCase())) {
                     filteredList.add(song);
                 }
             }
         }
-        // Cập nhật adapter
-        songAdapter.notifyDataSetChanged();
+        songAdapter.notifyDataSetChanged(); // Notify adapter of the filtered list
+    }
+
+    @Override
+    public void onSongClick(Song song, int position) {
+        // Chuyển đến MusicPlayerFragment với thông tin bài hát
+        FragmentTransaction transaction = requireFragmentManager().beginTransaction();
+        MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
+
+        // Chuyển thông tin bài hát đã chọn và danh sách bài hát
+        Bundle args = new Bundle();
+        args.putSerializable("SONG_LIST", new ArrayList<>(songList));
+        args.putInt("CURRENT_SONG_INDEX", position);
+        musicPlayerFragment.setArguments(args);
+
+        transaction.replace(R.id.fragment_container, musicPlayerFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

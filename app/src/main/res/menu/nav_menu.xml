@@ -26,6 +26,10 @@
             android:id="@+id/nav_album"
 
             android:title="Album"/>
+        <item
+            android:id="@+id/nav_like"
+
+            android:title="Yêu tích"/>
     </group>
     <item
         android:title="">

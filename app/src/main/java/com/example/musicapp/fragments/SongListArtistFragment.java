@@ -26,32 +26,21 @@ public class SongListArtistFragment extends Fragment {
         List<Song> songs = new ArrayList<>();
         switch (artistName) {
             case "Nadia Sitova":
-                songs.add(new Song("Classical Song 1", "Nadia Sitova", "Classical", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Classical Song 2", "Nadia Sitova", "Classical", R.drawable.artist, R.raw.sakura));
                 break;
             case "Original":
-                songs.add(new Song("Original Song 1", "Original", "Indie", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Original Song 2", "Original", "Indie", R.drawable.artist, R.raw.sakura));
+
                 break;
             case "Jonathan Grado":
-                songs.add(new Song("Grado Song 1", "Jonathan Grado", "Rock", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Grado Song 2", "Jonathan Grado", "Rock", R.drawable.artist, R.raw.sakura));
+
                 break;
             case "Puk Khantho":
-                songs.add(new Song("Khantho Song 1", "Puk Khantho", "Pop", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Khantho Song 2", "Puk Khantho", "Pop", R.drawable.artist, R.raw.sakura));
                 break;
             case "Caio Henrique":
-                songs.add(new Song("Henrique Song 1", "Caio Henrique", "Jazz", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Henrique Song 2", "Caio Henrique", "Jazz", R.drawable.artist, R.raw.sakura));
                 break;
             case "Alice Moore":
-                songs.add(new Song("Moore Song 1", "Alice Moore", "Hip Hop", R.drawable.artist, R.raw.sakura));
-                songs.add(new Song("Moore Song 2", "Alice Moore", "Hip Hop", R.drawable.artist, R.raw.sakura));
                 break;
             // Tiếp tục thêm nghệ sĩ khác nếu cần...
             default:
-                songs.add(new Song("Unknown Artist Song", "Unknown Artist", "Unknown", R.drawable.artist, R.raw.sakura));
                 break;
         }
         return songs;
@@ -71,20 +60,7 @@ public class SongListArtistFragment extends Fragment {
         }
 
         // Thiết lập Adapter cho RecyclerView
-        songAdapter = new SongAdapter(getContext(), songList, song -> {
-            // Xử lý sự kiện khi chọn bài hát
-            Bundle bundle = new Bundle();
-            bundle.putInt("currentSongIndex", songList.indexOf(song));
-            bundle.putSerializable("songList", new ArrayList<>(songList));
 
-            MusicPlayerFragment musicPlayerFragment = new MusicPlayerFragment();
-            musicPlayerFragment.setArguments(bundle);
-
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, musicPlayerFragment)
-                    .addToBackStack(null)
-                    .commit();
-        });
 
         recyclerView.setAdapter(songAdapter);
 
